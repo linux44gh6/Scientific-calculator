@@ -1,0 +1,134 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class ScientificCalculator extends JFrame {
+    private JTextField displayField;
+    private String currentInput;
+    private boolean isResultDisplayed;
+
+    public ScientificCalculator() {
+        setTitle("Scientific Calculator");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(300, 400);
+        setLocationRelativeTo(null);
+
+        initComponents();
+    }
+
+    private void initComponents() {
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BorderLayout());
+
+        displayField = new JTextField();
+        displayField.setEditable(false);
+        mainPanel.add(displayField, BorderLayout.NORTH);
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new GridLayout(5, 4));
+
+        String[] buttonLabels = {
+                "7", "8", "9", "/",
+                "4", "5", "6", "*",
+                "1", "2", "3", "-",
+                "0", ".", "=", "+",
+                "sin", "cos", "tan", "sqrt"
+        };
+
+        for (String label : buttonLabels) {
+            JButton button = new JButton(label);
+            button.addActionListener(new ButtonClickListener());
+            buttonPanel.add(button);
+        }
+
+        mainPanel.add(buttonPanel, BorderLayout.CENTER);
+
+        add(mainPanel);
+    }
+
+    private class ButtonClickListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JButton source = (JButton) e.getSource();
+            String buttonText = source.getText();
+
+            if (isResultDisplayed || currentInput == null) {
+                currentInput = "";
+                isResultDisplayed = false;
+            }
+
+            if (buttonText.equals("=")) {
+                evaluateExpression();
+            } else if (buttonText.equals("sqrt")) {
+                calculateSquareRoot();
+            } else if (buttonText.equals("sin")) {
+                calculateTrigonometricFunction("sin");
+            } else if (buttonText.equals("cos")) {
+                calculateTrigonometricFunction("cos");
+            } else if (buttonText.equals("tan")) {
+                calculateTrigonometricFunction("tan");
+            } else {
+                currentInput += buttonText;
+                displayField.setText(currentInput);
+            }
+        }
+
+        private void evaluateExpression() {
+            try {
+                double result = EvaluateExpression.evaluate(currentInput);
+                displayField.setText(Double.toString(result));
+                currentInput = Double.toString(result);
+                isResultDisplayed = true;
+            } catch (ArithmeticException ex) {
+                displayField.setText("Error");
+                currentInput = null;
+            }
+        }
+
+        private void calculateSquareRoot() {
+            try {
+                double result = Math.sqrt(Double.parseDouble(currentInput));
+                displayField.setText(Double.toString(result));
+                currentInput = Double.toString(result);
+                isResultDisplayed = true;
+            } catch (NumberFormatException ex) {
+                displayField.setText("Error");
+                currentInput = null;
+            }
+        }
+
+        private void calculateTrigonometricFunction(String functionName) {
+            try {
+                double angle = Math.toRadians(Double.parseDouble(currentInput));
+                double result;
+                switch (functionName) {
+                    case "sin":
+                        result = Math.sin(angle);
+                        break;
+                    case "cos":
+                        result = Math.cos(angle);
+                        break;
+                    case "tan":
+                        result = Math.tan(angle);
+                        break;
+                    default:
+                        result = 0;
+                }
+                displayField.setText(Double.toString(result));
+                currentInput = Double.toString(result);
+                isResultDisplayed = true;
+            } catch (NumberFormatException ex) {
+                displayField.setText("Error");
+                currentInput = null;
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            ScientificCalculator calculator = new ScientificCalculator();
+            calculator.setVisible(true);
+        });
+    }
+}
